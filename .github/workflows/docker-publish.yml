@@ -13,8 +13,11 @@ jobs:
     # Add these in the repo: Settings > Secrets and variables > Actions
     #   DOCKERHUB_USERNAME -> your Docker Hub username
     #   DOCKERHUB_TOKEN    -> a Docker Hub access token (Account Settings > Security)
+    # Optional variables, to publish elsewhere than <username>/foops:
+    #   DOCKERHUB_NAMESPACE  -> e.g. ontoportal
+    #   DOCKERHUB_REPOSITORY -> e.g. foops_fair_ontologies
     env:
-      IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/foops
+      IMAGE_NAME: ${{ vars.DOCKERHUB_NAMESPACE || secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY || 'foops' }}
 
     steps:
       - name: Checkout code
@@ -34,8 +37,10 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.IMAGE_NAME }}
+          # ref,event=tag keeps non-semver tags (v0.4.0_ontoportal) that the semver rules skip.
           tags: |
             type=ref,event=branch
+            type=ref,event=tag
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=sha
